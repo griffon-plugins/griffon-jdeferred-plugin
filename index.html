@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.3">
+<meta name="author" content="Andres Almiray">
+<title>Griffon JDeferred Plugin</title>
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="./coderay-asciidoctor.css">
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Griffon JDeferred Plugin</h1>
+<div class="details">
+<span id="author" class="author">Andres Almiray</span><br>
+<span id="revnumber">version 1.0.0-SNAPSHOT</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="#_handling_results">1.1. Handling Results</a></li>
+</ul>
+</li>
+<li><a href="#_jdeferred">2. Build JDeferred</a>
+<ul class="sectlevel2">
+<li><a href="#_gradle">2.1. Gradle</a>
+<ul class="sectlevel3">
+<li><a href="#_automatic">2.1.1. Automatic</a></li>
+<li><a href="#_manual">2.1.2. Manual</a></li>
+</ul>
+</li>
+<li><a href="#_maven">2.2. Maven</a></li>
+</ul>
+</li>
+<li><a href="#_modules">3. Modules</a>
+<ul class="sectlevel2">
+<li><a href="#_jdeferred_core">3.1. JDeferred Core</a></li>
+<li><a href="#_jdeferred_javafx">3.2. JDeferred JavaFX</a></li>
+<li><a href="#_jdeferred_lanterna">3.3. JDeferred Lanterna</a></li>
+<li><a href="#_jdeferred_pivot">3.4. JDeferred Pivot</a></li>
+<li><a href="#_jdeferred_swing">3.5. JDeferred Swing</a></li>
+</ul>
+</li>
+<li><a href="#_links">4. Links</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Allows controller actions to ve invoked as promises. Relies on <a href="http://jdeferred.org/" target="_blank">JDeferred</a> as promise implementation.</p>
+</div>
+<div class="paragraph">
+<p>There are two ways to configure an action as a promise: <code>implicit</code> and <code>explicit</code></p>
+</div>
+<div class="paragraph">
+<div class="title">Implicit Mode</div>
+<p>Requires applying the <code><a href="api/griffon/plugins/jdeferred/Promise.html" target="_blank">@Promise</a></code> annotation to the action method, making sure it returns a value.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="title">griffon-app/controllers/com/acme/SampleController.groovy</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy"><span class="keyword">package</span> com.acme
+
+<span class="keyword">import</span> <span class="include">griffon.core.artifact.GriffonController</span>
+<span class="keyword">import</span> <span class="include">griffon.inject.MVCMember</span>
+<span class="keyword">import</span> <span class="include">griffon.metadata.ArtifactProviderFor</span>
+<span class="keyword">import</span> <span class="include">griffon.plugins.jdeferred.Promise</span>
+<span class="keyword">import</span> <span class="include">org.codehaus.griffon.runtime.core.artifact.AbstractGriffonController</span>
+<span class="keyword">import</span> <span class="include">javax.annotation.Nonnull</span>
+
+<span class="annotation">@ArtifactProviderFor</span>(GriffonController)
+<span class="type">class</span> <span class="class">SampleController</span> <span class="directive">extends</span> AbstractGriffonController {
+    <span class="annotation">@MVCMember</span> <span class="annotation">@Nonnull</span> <span class="predefined-type">SampleModel</span> model
+
+    <span class="annotation">@Promise</span>
+    <span class="type">int</span> implicitMode() {
+        model.count = model.count + <span class="integer">1</span>
+        model.count
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The return value of the action will be set as the resolved value of the JDeferred <code>Promise</code>. Any exceptions that may occur
+during the action&#8217;s execution will set as the <code>Promise</code>s  rejected value.</p>
+</div>
+<div class="paragraph">
+<div class="title">Explicit Mode</div>
+<p>This mode gives you further control on when a value may be resolved or rejected; it alos allows you to publish intermediate
+results by calling <code>notify</code>. For example</p>
+</div>
+<div class="listingblock">
+<div class="title">griffon-app/controllers/com/acme/SampleController.groovy</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy"><span class="keyword">package</span> com.acme
+
+<span class="keyword">import</span> <span class="include">griffon.core.artifact.GriffonController</span>
+<span class="keyword">import</span> <span class="include">griffon.core.controller.ControllerAction</span>
+<span class="keyword">import</span> <span class="include">griffon.inject.MVCMember</span>
+<span class="keyword">import</span> <span class="include">griffon.metadata.ArtifactProviderFor</span>
+<span class="keyword">import</span> <span class="include">org.codehaus.griffon.runtime.core.artifact.AbstractGriffonController</span>
+<span class="keyword">import</span> <span class="include">org.jdeferred.Deferred</span>
+<span class="keyword">import</span> <span class="include">javax.annotation.Nonnull</span>
+
+<span class="annotation">@ArtifactProviderFor</span>(GriffonController)
+<span class="type">class</span> <span class="class">SampleController</span> <span class="directive">extends</span> AbstractGriffonController {
+    <span class="annotation">@MVCMember</span> <span class="annotation">@Nonnull</span> <span class="predefined-type">SampleModel</span> model
+
+    <span class="annotation">@ControllerAction</span>
+    <span class="type">void</span> explicitMode(<span class="annotation">@Nonnull</span> Deferred deferred) {
+        model.count = model.count + <span class="integer">1</span>
+        <span class="integer">1</span>.upto(<span class="integer">3</span>) { deferred.notify(<span class="local-variable">it</span>) }
+        deferred.resolve(model.count)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Any exceptions that may occur during the action&#8217;s execution will be set as the <code>Promise</code>s  rejected value if the
+promise has not been resolved at that point.</p>
+</div>
+<div class="sect2">
+<h3 id="_handling_results"><a class="anchor" href="#_handling_results"></a>1.1. Handling Results</h3>
+<div class="paragraph">
+<p>Typically you&#8217;ll register callbacks on a <code>Promise</code> in order to handle results and errors delivered by the promise.
+However promises are not available until the action is about to bhe executed, that&#8217;s too late to register a callback.
+For this reason, the jdeferred plugin allows you to record callbacks ahead of time, using <a href="api/griffon/plugins/jdeferred/RecordingPromise.html" target="_blank">RecordingPromise</a> in
+combination with <a href="api/griffon/plugins/jdeferred/PromiseManager.html" target="_blank">PromiseManager</a>. Here&#8217;s how callbacks can be set on a <code>view</code> during it&#8217;s intialization</p>
+</div>
+<div class="listingblock">
+<div class="title">griffon-app/views/com/acme/SampleView.java</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java"><span class="keyword">package</span> <span class="namespace">com.acme</span>;
+
+<span class="keyword">import</span> <span class="include">griffon.core.artifact.GriffonView</span>;
+<span class="keyword">import</span> <span class="include">griffon.inject.MVCMember</span>;
+<span class="keyword">import</span> <span class="include">griffon.metadata.ArtifactProviderFor</span>;
+<span class="keyword">import</span> <span class="include">griffon.plugins.jdeferred.RecordingPromise</span>;
+<span class="keyword">import</span> <span class="include">org.codehaus.griffon.runtime.javafx.artifact.AbstractJavaFXGriffonView</span>;
+
+<span class="keyword">import</span> <span class="include">javax.annotation.Nonnull</span>;
+<span class="keyword">import</span> <span class="include">javax.inject.Inject</span>;
+<span class="keyword">import</span> <span class="include">java.util.Map</span>;
+
+<span class="annotation">@ArtifactProviderFor</span>(GriffonView.class)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">SampleView</span> <span class="directive">extends</span> AbstractJavaFXGriffonView {
+    <span class="annotation">@Inject</span> <span class="directive">private</span> PromiseManager promiseManager;
+    <span class="annotation">@MVCMember</span> <span class="annotation">@Nonnull</span> <span class="directive">private</span> SampleController controller;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> mvcGroupInit(<span class="annotation">@Nonnull</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">Object</span>&gt; args) {
+        RecordingPromise&lt;<span class="predefined-type">String</span>, <span class="predefined-type">Throwable</span>, <span class="predefined-type">Void</span>&gt; promise = promiseManager.promiseFor(actionFor(controller, <span class="string"><span class="delimiter">&quot;</span><span class="content">click</span><span class="delimiter">&quot;</span></span>));
+        promise.done(r -&gt; <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Result is </span><span class="delimiter">&quot;</span></span> + r))
+            .fail(<span class="predefined-type">Throwable</span>::printStackTrace)
+            .always((s, r, j) -&gt; <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Finished!</span><span class="delimiter">&quot;</span></span>));
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> initUI() {
+        <span class="comment">// build the UI</span>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Griffon version: 2.11.0-SNAPSHOT</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_jdeferred"><a class="anchor" href="#_jdeferred"></a>2. Build JDeferred</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_gradle"><a class="anchor" href="#_gradle"></a>2.1. Gradle</h3>
+<div class="paragraph">
+<p>You have two options for configuring this plugin: automatic and manual.</p>
+</div>
+<div class="sect3">
+<h4 id="_automatic"><a class="anchor" href="#_automatic"></a>2.1.1. Automatic</h4>
+<div class="paragraph">
+<p>As long as the project has the <code>org.codehaus.griffon.griffon</code> plugin applied to it you
+may include the following snippet in <code>build.gradle</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    griffon 'org.codehaus.griffon.plugins:griffon-jdeferred-plugin:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>griffon</code> plugin will take care of the rest given its configuration.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_manual"><a class="anchor" href="#_manual"></a>2.1.2. Manual</h4>
+<div class="paragraph">
+<p>You will need to configure any of the following blocks depending on your setup</p>
+</div>
+<div class="listingblock">
+<div class="title">Core Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-jdeferred-core:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">JavaFX Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-jdeferred-javafx:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Lanterna Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-jdeferred-lanterna:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Pivot Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-jdeferred-pivot:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Swing Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-jdeferred-swing:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_maven"><a class="anchor" href="#_maven"></a>2.2. Maven</h3>
+<div class="paragraph">
+<p>First configure the <code>griffon-jdeferred-plugin</code> BOM in your POM file, by placing the following
+snippet before the <code>&lt;build&gt;</code> element</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependencyManagement&gt;</span>
+    <span class="tag">&lt;dependencies&gt;</span>
+        <span class="tag">&lt;dependency&gt;</span>
+            <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+            <span class="tag">&lt;artifactId&gt;</span>griffon-jdeferred-plugin<span class="tag">&lt;/artifactId&gt;</span>
+            <span class="tag">&lt;version&gt;</span>1.0.0-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
+            <span class="tag">&lt;type&gt;</span>pom<span class="tag">&lt;/type&gt;</span>
+            <span class="tag">&lt;scope&gt;</span>import<span class="tag">&lt;/scope&gt;</span>
+        <span class="tag">&lt;/dependency&gt;</span>
+    <span class="tag">&lt;/dependencies&gt;</span>
+<span class="tag">&lt;/dependencyManagement&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next configure dependencies as required by your particular setup</p>
+</div>
+<div class="listingblock">
+<div class="title">Core Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-jdeferred-core<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">JavaFX Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-jdeferred-javafx<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Lanterna Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-jdeferred-lanterna<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Pivot Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-jdeferred-pivot<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Swing Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-jdeferred-swing<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_modules"><a class="anchor" href="#_modules"></a>3. Modules</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following sections display all bindings per module. Use this information to
+successfully override a binding on your own modules or to troubleshoot a module
+binding if the wrong type has been applied by the Griffon runtime.</p>
+</div>
+<div class="sect2">
+<h3 id="_jdeferred_core"><a class="anchor" href="#_jdeferred_core"></a>3.1. JDeferred Core</h3>
+<div class="paragraph">
+<p>Module name: <code>jdeferred</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java">bind(ActionManager.class)
+    .to(JDeferredActionManager.class)
+    .asSingleton();
+
+bind(ActionHandler.class)
+    .to(JDeferredActionHandler.class)
+    .asSingleton();
+
+bind(PromiseManager.class)
+    .to(DefaultPromiseManager.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jdeferred_javafx"><a class="anchor" href="#_jdeferred_javafx"></a>3.2. JDeferred JavaFX</h3>
+<div class="paragraph">
+<p>Module name: <code>jdeferred-javafx</code></p>
+</div>
+<div class="paragraph">
+<p>Depends on: <code>jdeferred</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java">bind(ActionManager.class)
+    .to(JDeferredJavaFXActionManager.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jdeferred_lanterna"><a class="anchor" href="#_jdeferred_lanterna"></a>3.3. JDeferred Lanterna</h3>
+<div class="paragraph">
+<p>Module name: <code>jdeferred-lanterna</code></p>
+</div>
+<div class="paragraph">
+<p>Depends on: <code>jdeferred</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java">bind(ActionManager.class)
+    .to(JDeferredJavaLanternaManager.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jdeferred_pivot"><a class="anchor" href="#_jdeferred_pivot"></a>3.4. JDeferred Pivot</h3>
+<div class="paragraph">
+<p>Module name: <code>jdeferred-pivot</code></p>
+</div>
+<div class="paragraph">
+<p>Depends on: <code>jdeferred</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java">bind(ActionManager.class)
+    .to(JDeferredPivotActionManager.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jdeferred_swing"><a class="anchor" href="#_jdeferred_swing"></a>3.5. JDeferred Swing</h3>
+<div class="paragraph">
+<p>Module name: <code>jdeferred-swing</code></p>
+</div>
+<div class="paragraph">
+<p>Depends on: <code>jdeferred</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java">bind(ActionManager.class)
+    .to(JDeferredSwingActionManager.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_links"><a class="anchor" href="#_links"></a>4. Links</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="api/index.html" target="_blank">Javadoc</a></p>
+</div>
+<div class="paragraph">
+<p><a href="api-src/index.html" target="_blank">API Sources</a></p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.0.0-SNAPSHOT<br>
+Last updated 2017-04-19 12:30:20 +02:00
+</div>
+</div>
+</body>
+</html>
