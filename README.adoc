@@ -1,0 +1,15 @@
+= griffon-jdeferred-plugin
+:linkattrs:
+:project-name: griffon-jdeferred-plugin
+
+image:http://img.shields.io/travis/griffon-plugins/{project-name}/master.svg["Build Status", link="https://travis-ci.org/griffon-plugins/{project-name}"]
+image:http://img.shields.io/coveralls/griffon-plugins/{project-name}/master.svg["Coverage Status", link="https://coveralls.io/r/griffon-plugins/{project-name}"]
+image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2", link="http://www.apache.org/licenses/LICENSE-2.0.txt"]
+image:https://api.bintray.com/packages/griffon/griffon-plugins/{project-name}/images/download.svg[link="https://bintray.com/griffon/griffon-plugins/{project-name}/_latestVersion"]
+
+---
+
+Allows controller actions to ve invoked as promises. Relies on link:http://jdeferred.org/[JDeferred] as promise implementation.
+
+Refer to the link:http://griffon-plugins.github.io/griffon-jdeferred-plugin/[plugin guide, window="_blank"] for
+further information on jdeferred and usage.

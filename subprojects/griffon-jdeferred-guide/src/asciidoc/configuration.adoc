@@ -1,0 +1,144 @@
+
+[[_jdeferred]]
+= Build JDeferred
+
+== Gradle
+
+You have two options for configuring this plugin: automatic and manual.
+
+=== Automatic
+
+As long as the project has the `org.codehaus.griffon.griffon` plugin applied to it you
+may include the following snippet in `build.gradle`
+
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    griffon '{project-group}:griffon-jdeferred-plugin:{project-version}'
+}
+----
+
+The `griffon` plugin will take care of the rest given its configuration.
+
+=== Manual
+
+You will need to configure any of the following blocks depending on your setup
+
+.Core Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-jdeferred-core:{project-version}'
+}
+----
+
+.JavaFX Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-jdeferred-javafx:{project-version}'
+}
+----
+
+.Lanterna Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-jdeferred-lanterna:{project-version}'
+}
+----
+
+.Pivot Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-jdeferred-pivot:{project-version}'
+}
+----
+
+.Swing Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-jdeferred-swing:{project-version}'
+}
+----
+
+== Maven
+
+First configure the `griffon-jdeferred-plugin` BOM in your POM file, by placing the following
+snippet before the `<build>` element
+
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>{project-group}</groupId>
+            <artifactId>griffon-jdeferred-plugin</artifactId>
+            <version>{project-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+Next configure dependencies as required by your particular setup
+
+.Core Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-jdeferred-core</artifactId>
+</dependency>
+----
+
+.JavaFX Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-jdeferred-javafx</artifactId>
+</dependency>
+----
+
+.Lanterna Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-jdeferred-lanterna</artifactId>
+</dependency>
+----
+
+.Pivot Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-jdeferred-pivot</artifactId>
+</dependency>
+----
+
+.Swing Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-jdeferred-swing</artifactId>
+</dependency>
+----

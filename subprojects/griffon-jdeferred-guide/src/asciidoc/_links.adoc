@@ -1,0 +1,5 @@
+
+:link_jdeferred: link:http://jdeferred.org/[JDeferred, window="_blank"]
+:link_griffon_promise: link:api/griffon/plugins/jdeferred/Promise.html[@Promise, window="_blank"]
+:link_recording_promise: link:api/griffon/plugins/jdeferred/RecordingPromise.html[RecordingPromise, window="_blank"]
+:link_promise_manager: link:api/griffon/plugins/jdeferred/PromiseManager.html[PromiseManager, window="_blank"]
