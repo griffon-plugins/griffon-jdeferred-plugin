@@ -4,6 +4,8 @@
 
 Allows controller actions to ve invoked as promises. Relies on {link_jdeferred} as promise implementation.
 
+Griffon version: {griffon-version}
+
 There are two ways to configure an action as a promise: `implicit` and `explicit`
 
 .Implicit Mode
