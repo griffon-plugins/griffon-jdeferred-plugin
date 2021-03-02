@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2017-2021 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +17,17 @@
  */
 package org.codehaus.griffon.runtime.jdeferred;
 
+import griffon.annotations.core.Nonnull;
+import griffon.annotations.core.Nullable;
 import griffon.core.controller.Action;
 import griffon.core.controller.ActionMetadata;
 import griffon.core.controller.ActionParameter;
 import griffon.plugins.jdeferred.Promise;
 import griffon.plugins.jdeferred.PromiseManager;
 import griffon.plugins.jdeferred.RecordingPromise;
-import org.jdeferred.Deferred;
-import org.jdeferred.impl.DeferredObject;
+import org.jdeferred2.Deferred;
+import org.jdeferred2.impl.DeferredObject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.util.Map;

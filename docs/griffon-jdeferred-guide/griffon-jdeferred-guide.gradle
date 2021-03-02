@@ -15,13 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    //compileOnly "org.codehaus.griffon:griffon-core-compile:${griffonVersion}"
-    //testCompileOnly "org.codehaus.griffon:griffon-groovy-compile:${griffonVersion}"
-    api project(':griffon-jdeferred-core')
-    api "org.codehaus.griffon:griffon-swing:${griffonVersion}"
+ext.projectDependencies = [
+    ':griffon-jdeferred-core',
+    ':griffon-jdeferred-swing',
+    ':griffon-jdeferred-javafx'
+]
 
-    testImplementation "org.codehaus.griffon:griffon-beans:${griffonVersion}"
-    testImplementation "org.codehaus.griffon:griffon-swing-test:${griffonVersion}"
-    testImplementation "org.codehaus.griffon:griffon-swing-groovy:${griffonVersion}"
-}
+ext.projectDependencies.each { evaluationDependsOn it }

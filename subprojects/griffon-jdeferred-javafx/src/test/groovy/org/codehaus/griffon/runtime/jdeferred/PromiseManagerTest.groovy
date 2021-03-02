@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2017-2021 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +26,7 @@ import griffon.core.test.GriffonUnitRule
 import griffon.core.test.TestFor
 import griffon.plugins.jdeferred.PromiseManager
 import javafx.embed.swing.JFXPanel
-import org.jdeferred.Promise.State
+import org.jdeferred2.Promise.State
 import org.junit.Rule
 import org.junit.Test
 
@@ -45,10 +47,14 @@ class PromiseManagerTest {
     @Rule
     public final GriffonUnitRule griffon = new GriffonUnitRule()
 
-    @Inject private PromiseManager promiseManager
-    @Inject private ArtifactManager artifactManager
-    @Inject private ActionManager actionManager
-    @Inject private GriffonApplication application
+    @Inject
+    private PromiseManager promiseManager
+    @Inject
+    private ArtifactManager artifactManager
+    @Inject
+    private ActionManager actionManager
+    @Inject
+    private GriffonApplication application
 
     private SampleController controller
 
